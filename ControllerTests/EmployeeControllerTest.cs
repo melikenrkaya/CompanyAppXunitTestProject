@@ -60,7 +60,7 @@ namespace CompanyAppTestProject.ControllerTests
         {
             // Arrange
 
-           _mockemployeesServices.Setup(x => x.GetAllAsync())!.ReturnsAsync((List<Employee>)null);            
+           _mockemployeesServices.Setup(x => x.GetAllAsync())!.ReturnsAsync((List<Employee>?)null);            
           
             // Act
             var result = await _controller.GetALL();
@@ -93,7 +93,7 @@ namespace CompanyAppTestProject.ControllerTests
         public async Task EmployeeController_GetById_NotFoundResult()
         {
             // Arrange
-            _mockemployeesServices.Setup(x => x.GetByIdAsync(1))!.ReturnsAsync((Employee)null);
+            _mockemployeesServices.Setup(x => x.GetByIdAsync(1))!.ReturnsAsync((Employee?)null);
 
             // Act
             var result = await _controller.GetById(1);
@@ -185,7 +185,7 @@ namespace CompanyAppTestProject.ControllerTests
             // Arrange
             int id = 0;
             // Act
-            var result = await _controller.Update(id, null);
+            var result = await _controller.Update(id, null!);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -198,7 +198,7 @@ namespace CompanyAppTestProject.ControllerTests
             int id = 1;
             UpdateEmployeesRequestDto updateDto = null!;
 
-            _mockemployeesServices.Setup(s => s.UpdateAsync(id, updateDto!)).ReturnsAsync((Employee)null);
+            _mockemployeesServices.Setup(s => s.UpdateAsync(id, updateDto!)).ReturnsAsync((Employee?)null);
 
             // Act
             var result = await _controller.Update(id, updateDto!);
@@ -244,7 +244,7 @@ namespace CompanyAppTestProject.ControllerTests
         {
             // Arrange
             int id = 1;
-            _mockemployeesServices.Setup(s => s.DeleteAsync(id)).ReturnsAsync((Employee)null);
+            _mockemployeesServices.Setup(s => s.DeleteAsync(id)).ReturnsAsync((Employee?)null);
 
             // Act
             var result = await _controller.Delete(id);

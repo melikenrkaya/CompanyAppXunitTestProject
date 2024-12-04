@@ -85,7 +85,7 @@ namespace CompanyAppTestProject.ControllerTests
 
             // Kullanıcıyı veritabanına ekle
             await _dbContext.Users.AddAsync(user);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(); //VERİTABANINA KAYDET
 
             _userManagerMock.Setup(um => um.Users).Returns(_dbContext.Users);
 
@@ -93,14 +93,14 @@ namespace CompanyAppTestProject.ControllerTests
             _signInManagerMock.Setup(sm => sm.CheckPasswordSignInAsync(It.IsAny<AppUser>(), loginDto.Password, false))
                 .ReturnsAsync(signInResult);
 
-            _tokenServiceMock.Setup(ts => ts.CreateToken(user)).Returns("test-token");
+            _tokenServiceMock.Setup(ts => ts.CreateToken(user)).Returns(new ResponseModel<string> { Data = "test-token" }); // TOKEN OLUSTUR
 
 
             // Act
-            var result = await _controller.Login(loginDto);
+            var result = await _controller.Login(loginDto); //TESTİ ÇALIŞTIRMAK 
 
             // Assert
-            var okResult = result.Should().BeOfType<OkObjectResult>().Which;
+            var okResult = result.Should().BeOfType<OkObjectResult>().Which; //ÇIKAN SONUÇ İSTEDİĞİMLE UYUŞUYOR MU DOĞRULAMA
             var newUserDto = okResult.Value.Should().BeOfType<NewUserDto>().Which;
             newUserDto.Token.Should().Be("test-token");
         }
@@ -116,7 +116,7 @@ namespace CompanyAppTestProject.ControllerTests
                 .ReturnsAsync(IdentityResult.Success);
             _userManagerMock.Setup(um => um.AddToRoleAsync(It.IsAny<AppUser>(), registerDto.Role))
                 .ReturnsAsync(IdentityResult.Success);
-            _tokenServiceMock.Setup(ts => ts.CreateToken(It.IsAny<AppUser>())).Returns("new-user-token");
+            _tokenServiceMock.Setup(ts => ts.CreateToken(It.IsAny<AppUser>())).Returns(new ResponseModel<string> { Data = "new-user-token" });
 
 
             // Act

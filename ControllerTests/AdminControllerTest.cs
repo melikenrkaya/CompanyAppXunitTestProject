@@ -41,8 +41,8 @@ namespace CompanyAppTestProject.ControllerTests
             // Arrange
             var admin = new List<Admin>
             {
-                new Admin {UserName = "John", Password = "ret5y6u76r" ,Role="Yönetici"},
-                new Admin {UserName = "Jane", Password = "ety6u5uye",Role="Yapımcı" }
+                new Admin {UserName = "John", Password = "ret5y6u76r" ,Role="Admin"},
+                new Admin {UserName = "Jane", Password = "ety6u5uye",Role="Admin" }
             };
             _mockAdminServices.Setup(x => x.GetAllAsync()).ReturnsAsync(admin);
 
@@ -71,7 +71,7 @@ namespace CompanyAppTestProject.ControllerTests
         public async Task AdminController_GetById_ResultOk()
         {
             // Arrange
-            var admin = new Admin { Id = 1, UserName = "John", Password = "ret5y6u76r", Role = "Yönetici" };
+            var admin = new Admin { Id = 1, UserName = "John", Password = "ret5y6u76r", Role = "Admin" };
             _mockAdminServices.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(admin);
 
             // Act
@@ -101,13 +101,13 @@ namespace CompanyAppTestProject.ControllerTests
             {
                 UserName = "John",
                 Password = "frgdhtjykul34",
-                Role = "Yönetici"
+                Role = "Admin"
             };
 
             var adminModel = new Admin {
                 UserName = "John",
                 Password = "frgdhtjykul34",
-                Role = "Yönetici"
+                Role = "Admin"
             };
 
             _mockAdminServices.Setup(x => x.CreateAsync(It.IsAny<Admin>()))
@@ -129,7 +129,7 @@ namespace CompanyAppTestProject.ControllerTests
             {
                 UserName = "John",
                 Password = "",
-                Role = "Yönetici"
+                Role = "Admin"
             };
 
             // Act
@@ -147,13 +147,13 @@ namespace CompanyAppTestProject.ControllerTests
             {
                 UserName = "John",
                 Password = "dfretadb",
-                Role = "Yönetici"
+                Role = "Admin"
             };
             var updatedAdmin = new Admin
             {
                 UserName = "John",
                 Password = "dfretadb",
-                Role = "Yardımcı"
+                Role = "Admin"
             };
 
             _mockAdminServices.Setup(s => s.UpdateAsync(id, updateDto)).ReturnsAsync(updatedAdmin);
@@ -188,7 +188,7 @@ namespace CompanyAppTestProject.ControllerTests
             {
                 UserName = "",
                 Password = "password",
-                Role = "Yönetici"
+                Role = "Admin"
             };
 
             _mockAdminServices.Setup(s => s.UpdateAsync(id, updateDto)).ReturnsAsync((Admin)null);
@@ -209,7 +209,7 @@ namespace CompanyAppTestProject.ControllerTests
             {
                 UserName = "John",
                 Password = "dfretadb",
-                Role = "Yardımcı"
+                Role = "Admin"
             };
 
             _mockAdminServices.Setup(s => s.DeleteAsync(id)).ReturnsAsync(admin);
