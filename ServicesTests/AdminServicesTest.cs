@@ -1,73 +1,137 @@
-﻿using companyappbasic.Data.Context;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using companyappbasic.Data.Context;
 using companyappbasic.Data.Entity;
 using companyappbasic.Data.Models;
 using companyappbasic.Services.AdminServices;
 using FluentAssertions;
-using FluentAssertions.Common;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Moq.EntityFrameworkCore;
+using Xunit;
 
 namespace CompanyAppTestProject.ServicesTests
 {
     public class AdminServicesTest
     {
-        private readonly ApplicationDBContext _dbContext;
-        private readonly Adminservi _AdminServices;
+        private readonly Mock<ApplicationDBContext> _mockContext;
+        private readonly Adminservi _adminService;
 
         public AdminServicesTest()
         {
-            var options = new DbContextOptionsBuilder<ApplicationDBContext>()
-                 .UseInMemoryDatabase(databaseName: "TestDB")
-                 .Options;
-
-            _dbContext = new ApplicationDBContext(options);
-            _AdminServices = new Adminservi(_dbContext);
+            _mockContext = new Mock<ApplicationDBContext>();
+            _adminService = new Adminservi(_mockContext.Object);
         }
 
         [Fact]
-        public async Task AdminServices_GetAll_ToList()
-        {
-            var admins = new List<Admin> { new Admin { Id = 1, UserName = "admin1" } };
-            await _dbContext.Admins.AddRangeAsync(admins);
-            await _dbContext.SaveChangesAsync();
-            // Act
-            var result = await _AdminServices.GetAllAsync();
-
-            // Assert
-            result.Should().HaveCount(1);
-            result[0].UserName.Should().Be("admin1");
-        }
-        [Fact]
-        public async Task AdminServices_GetById_FirstOrDefaultAsync()
+        public async Task AdminServices_GetAllAsync_ReturnAllAdmins()
         {
             // Arrange
-            var admin = new Admin { Id = 1, UserName = "admin1" };
-            // _AdminServices.Setup(c => c.Admins.FindAsync(1)).ReturnsAsync(admin);
+            var adminList = new List<Admin>
+            {
+                new Admin { Id = 1, UserName = "Melike", Password = "password1", Role = "Admin" },
+                new Admin { Id = 2, UserName = "Eyup", Password = "password2", Role = "User" }
+            };
+            _mockContext.Setup(x => x.Admins).ReturnsDbSet(adminList);
 
             // Act
-            var result = await _AdminServices.GetByIdAsync(1);
+            var result = await _adminService.GetAllAsync();
+
+            // Assert
+            result.Should().HaveCount(2);
+            result.Should().Contain(admin => admin.UserName == "Melike");
+            result.Should().Contain(admin => admin.UserName == "Eyup");
+        }
+
+        [Fact]
+        public async Task AdminServices_GetByIdAsync_ShouldReturnCorrectAdmin_WhenAdminExists()
+        {
+            // Arrange
+            var admin = new Admin { Id = 1, UserName = "Melike", Password = "password1", Role = "Admin" };
+            _mockContext.Setup(x => x.Admins).ReturnsDbSet(new List<Admin> { admin });
+
+            // Act
+            var result = await _adminService.GetByIdAsync(1);
 
             // Assert
             result.Should().NotBeNull();
-            result.UserName.Should().Be("admin1");
+            result?.UserName.Should().Be("Melike");
         }
-        public async Task AdminServices_Create_AddAsync()
+
+        [Fact]
+        public async Task AdminServices_CreateAsync_ShouldAddNewAdmin()
         {
+            // Arrange
+            var newAdmin = new Admin { Id = 1, UserName = "NewAdmin", Password = "newpassword", Role = "Admin" };
+            _mockContext.Setup(x => x.Admins).ReturnsDbSet(new List<Admin>());
+
+            // Act
+            var result = await _adminService.CreateAsync(newAdmin);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.UserName.Should().Be("NewAdmin");
+
+            //Addasync yöntemi'nin sadece 1 kez çağrıldığını doğrulamak için;
+            _mockContext.Verify(x => x.Admins.AddAsync(It.IsAny<Admin>(), default), Times.Once);
+
+            //SaveChangesAsync yöntemi'nin sadece 1 kez çağrıldığını doğrulamak için;
+            _mockContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
 
         }
-        public async Task AdminServices_Update_FindAsync()
+
+        [Fact]
+        public async Task AdminServices_UpdateAsync_ShouldUpdateExistingAdmin()
         {
+            // Arrange
+            var existingAdmin = new Admin { Id = 1, UserName = "Melike", Password = "oldpassword", Role = "Admin" };
+            var adminList = new List<Admin> { existingAdmin };
 
+            // `Admins` DbSet'i için `ReturnsDbSet` ile mock ayarlandı
+            _mockContext.Setup(x => x.Admins).ReturnsDbSet(adminList);
+
+            // `FindAsync` metodunun doğru çalışması için ayarlandı
+            _mockContext.Setup(x => x.Admins.FindAsync(It.IsAny<object[]>()))
+                        .ReturnsAsync((object[] ids) => adminList.FirstOrDefault(a => a.Id == (int)ids[0]));
+
+
+            // SaveChangesAsync'in çağrıldığını doğrulamak için yapılandırma eklendi
+            _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            
+            var updateDto = new UpdateAdminRequestDto { UserName = "UpdatedAdmin", Password = "newpassword", Role = "SuperAdmin" };
+
+            // Act
+            var result = await _adminService.UpdateAsync(1, updateDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result?.UserName.Should().Be("UpdatedAdmin");
+            result?.Password.Should().Be("newpassword");
+            result?.Role.Should().Be("SuperAdmin");
+
+            // SaveChangesAsync'in bir kez çağrıldığını doğrula
+            _mockContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
-        public async Task  AsminServices_Delete_FirstOrDefaultAsync()
+
+
+        [Fact]
+        public async Task AdminServices_DeleteAsync_ShouldRemoveAdmin_WhenAdminExists()
         {
+            // Arrange
+            var adminToDelete = new Admin { Id = 1, UserName = "Melike", Password = "password1", Role = "Admin" };
+            _mockContext.Setup(x => x.Admins).ReturnsDbSet(new List<Admin> { adminToDelete });
 
+            // Act
+            var result = await _adminService.DeleteAsync(1);
+
+            // Assert
+            result.Should().NotBeNull();
+            result?.Id.Should().Be(1);
+            _mockContext.Verify(x => x.Admins.Remove(It.IsAny<Admin>()), Times.Once);
+            _mockContext.Verify(x => x.SaveChangesAsync(default), Times.Once);
         }
-
     }
 }
+
