@@ -51,17 +51,17 @@ namespace CompanyAppTestProject.ServicesTests
             // StringWriter ile Console çıktısını yakala
             var successStringWriter = new System.IO.StringWriter();
             Console.SetOut(successStringWriter); // Console.WriteLine çıktısını StringWriter'a yönlendir
-                                                 // BasicPublish metodunun çağrılmasını simüle et
 
             // Act
             await _rabbitProducer.SendMessageAsync(email, subject, body);
 
             // Assert
-        //    _mockChannel.Received(1).BasicPublish(
-        //Arg.Any<string>(),
-        //Arg.Any<string>(),
-        //Arg.Any<IBasicProperties>(),
-        //Arg.Any<ReadOnlyMemory<byte>>());
+
+            //_mockChannel.Received(1).BasicPublish(
+            //Arg.Any<string>(),
+            //Arg.Any<string>(),
+            //Arg.Any<IBasicProperties>(),
+            //Arg.Any<ReadOnlyMemory<byte>>());
 
             _mockChannel.When(x => x.BasicPublish(
                 Arg.Any<string>(),
@@ -84,20 +84,17 @@ namespace CompanyAppTestProject.ServicesTests
             var subject = "Test Subject";
             var body = "Test Body";
 
-
             var errorStringWriter = new System.IO.StringWriter();
             Console.SetOut(errorStringWriter);
 
             // RabbitMQ bağlantı ve kanal hatası simüle et
             _mockChannel
-       .When(x => x.BasicPublish(
-           Arg.Any<string>(),
-           Arg.Any<string>(),
-           Arg.Any<IBasicProperties>(),
-           Arg.Any<ReadOnlyMemory<byte>>()))
-       .Throw(new Exception("None of the specified endpoints were reachable"));
-
-
+           .When(x => x.BasicPublish(
+               Arg.Any<string>(),
+               Arg.Any<string>(),
+               Arg.Any<IBasicProperties>(),
+               Arg.Any<ReadOnlyMemory<byte>>()))
+           .Throw(new Exception("None of the specified endpoints were reachable"));
 
             // Act
             await _rabbitProducer.SendMessageAsync(email, subject, body);
@@ -109,6 +106,7 @@ namespace CompanyAppTestProject.ServicesTests
             output.Should().Contain("Mesaj gönderme hatası");
             output.Should().Contain("None of the specified endpoints were reachable");
         }
+            
 
     }
 }
