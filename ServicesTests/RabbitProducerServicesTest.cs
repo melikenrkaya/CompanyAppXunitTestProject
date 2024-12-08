@@ -109,42 +109,6 @@ namespace CompanyAppTestProject.ServicesTests
             output.Should().Contain("Mesaj gönderme hatası");
             output.Should().Contain("None of the specified endpoints were reachable");
         }
-        [Fact]
-        public void ConsoleOutput_ShouldContainTestMessage()
-        {
-            // Arrange
-            var stringWriter = new System.IO.StringWriter();
-            Console.SetOut(stringWriter); // Console çıktısını StringWriter'a yönlendir
-
-            // Act
-            Console.WriteLine("Test mesajı");
-
-            // Assert
-            var output = stringWriter.ToString();
-            output.Should().Contain("Test mesajı"); // FluentAssertions ile doğrulama
-        }
-        [Fact]
-        public void ConsoleOutput_ShouldContainTestMe33ssage()
-        {
-            // Arrange
-            var stringWriter = new System.IO.StringWriter();
-            Console.SetOut(stringWriter);
-
-            try
-            {
-                // Act
-                Console.WriteLine("Test mesajı");
-
-                // Assert
-                var output = stringWriter.ToString();
-                output.Should().Contain("Test mesajı");
-            }
-            finally
-            {
-                // Console çıktısını varsayılan haline döndür
-                Console.SetOut(new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true });
-            }
-        }
 
     }
 }
